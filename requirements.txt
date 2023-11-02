@@ -1,5 +1,10 @@
+ipykernel
 transformers
 accelerate
 torch
 # Sentencepiece for llama models
 sentencepiece
+# For llama models
+protobuf
+# bitsandbytes, for quantised inference
+bitsandbytes
