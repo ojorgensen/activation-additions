@@ -71,9 +71,9 @@ def gather_activations_from_dataset(
         activations = activations.view(*new_shape)  # (batch_size, n_tokens, n_heads, head_hidden_dim)
         return activations
 
-
+    # TODO: work out if we need to treat inputs to llama models differently
     is_llama = 'llama' in model_config['name_or_path']
-    prepend_bos = not is_llama
+    # prepend_bos = not is_llama
     activation_storage = {}
 
     # Get all layer activations we want
@@ -84,9 +84,6 @@ def gather_activations_from_dataset(
 
     for n in range(N_TRIALS):
         prompt = dataset[n]
-        if is_llama:
-            # work out how to setup prompts for llama
-            raise NotImplementedError
         activations_td = gather_activations(prompt, all_activation_layers, model, tokenizer)
         if split_attention:
             raise NotImplementedError
