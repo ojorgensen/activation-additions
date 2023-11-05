@@ -4,6 +4,7 @@ accelerate
 torch
 numpy
 pandas
+einops
 # Sentencepiece for llama models
 sentencepiece
 # For llama models
