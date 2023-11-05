@@ -2,9 +2,13 @@ ipykernel
 transformers
 accelerate
 torch
+numpy
+pandas
 # Sentencepiece for llama models
 sentencepiece
 # For llama models
 protobuf
 # bitsandbytes, for quantised inference
 bitsandbytes
+# baukit
+git+https://github.com/davidbau/baukit@main#egg=baukit

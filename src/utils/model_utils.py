@@ -8,6 +8,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer, Ll
 def load_gpt_model_and_tokeniser(model_name: str):
     """
     Load a huggingface model and its tokeniser
+    TODO: add mlp outputs to model configs. Currently layer_hook_names are for residual stream vectors (I think),
+    and attn_hook_names are for attention outputs.
     """
     access_token = open("llama-key.txt", "r").read()
     accelerator = accelerate.Accelerator()
