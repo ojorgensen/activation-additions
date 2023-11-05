@@ -92,9 +92,11 @@ def gather_activations_from_dataset(
             raise NotImplementedError
         
         for activation_type in activation_types:
-            print(activations_td[model_config[activation_type][0]].output.shape)
             stack = torch.stack([activations_td[layer].output[0] for layer in model_config[activation_type]])
-            # Shape is (n_layers, n_tokens, hidden_size)
+            # Shape should be (n_layers, n_tokens, hidden_size)
+            # Removes batch dimension if it exists
+            if len(stack.shape) == 4:
+                stack = einops.rearrange(stack, 'n_layers 1 n_tokens hidden_size -> n_layers n_tokens hidden_size')
             print(stack.shape)
             if final_activations_only:
                 stack = stack[:,-1,:]
