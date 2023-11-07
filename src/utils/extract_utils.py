@@ -7,7 +7,7 @@ import einops
 import numpy as np
 import pandas as pd
 from baukit import TraceDict
-
+from tqdm import tqdm
 
 # Activations
 def gather_activations(prompt, layers, model, tokenizer):
@@ -82,7 +82,7 @@ def gather_activations_from_dataset(
         all_activation_layers += model_config[activation_type]
         activation_storage[activation_type] = {}
 
-    for n in range(N_TRIALS):
+    for n in tqdm(range(N_TRIALS), desc="Gathering activations"):
         prompt = dataset[n]
         activations_td = gather_activations(prompt, all_activation_layers, model, tokenizer)
         if split_attention:
@@ -94,7 +94,7 @@ def gather_activations_from_dataset(
             # Removes batch dimension if it exists
             if len(stack.shape) == 4:
                 stack = einops.rearrange(stack, 'n_layers 1 n_tokens hidden_size -> n_layers n_tokens hidden_size')
-            print(stack.shape)
+            # print(stack.shape)
             if final_activations_only:
                 stack = stack[:,-1,:]
                 stack = einops.rearrange(stack, 'n_layers hidden_size -> n_layers 1 hidden_size')

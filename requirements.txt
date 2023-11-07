@@ -1,8 +1,12 @@
 ipykernel
+# Huggingface libraries
 transformers
+datasets
 accelerate
+# pytorchy stuff
 torch
 numpy
+matplotlib
 pandas
 einops
 # Sentencepiece for llama models

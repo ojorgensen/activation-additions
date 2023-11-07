@@ -90,5 +90,6 @@ def load_gpt_model_and_tokeniser(model_name: str):
     # accelerate it, to use multi-gpu for inference!
     model, tokenizer = accelerator.prepare(model, tokenizer)
 
+
     return model, tokenizer, MODEL_CONFIG
     
