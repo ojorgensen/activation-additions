@@ -23,7 +23,7 @@ def load_gpt_model_and_tokeniser(model_name: str):
         MODEL_CONFIG={"n_heads":model.config.n_head,
                       "n_layers":model.config.n_layer,
                       "resid_dim":model.config.n_embd,
-                      "name_or_path":model.config.name_or_path,
+                      "name_or_path":'gpt2-xl',
                       "attn_hook_names":[f'transformer.h.{layer}.attn.c_proj' for layer in range(model.config.n_layer)],
                       "layer_hook_names":[f'transformer.h.{layer}' for layer in range(model.config.n_layer)]}
         
@@ -35,7 +35,7 @@ def load_gpt_model_and_tokeniser(model_name: str):
         MODEL_CONFIG={"n_heads":model.config.n_head,
                       "n_layers":model.config.n_layer,
                       "resid_dim":model.config.n_embd,
-                      "name_or_path":model.config.name_or_path,
+                      "name_or_path":'gpt-j',
                       "attn_hook_names":[f'transformer.h.{layer}.attn.out_proj' for layer in range(model.config.n_layer)],
                       "layer_hook_names":[f'transformer.h.{layer}' for layer in range(model.config.n_layer)]}
     
@@ -47,7 +47,7 @@ def load_gpt_model_and_tokeniser(model_name: str):
         MODEL_CONFIG={"n_heads":model.config.num_attention_heads,
                       "n_layers":model.config.num_hidden_layers,
                       "resid_dim": model.config.hidden_size,
-                      "name_or_path":model.config.name_or_path,
+                      "name_or_path":'gpt-neox',
                       "attn_hook_names":[f'gpt_neox.layers.{layer}.attention.dense' for layer in range(model.config.num_hidden_layers)],
                       "layer_hook_names":[f'gpt_neox.layers.{layer}' for layer in range(model.config.num_hidden_layers)]}
         
@@ -69,18 +69,21 @@ def load_gpt_model_and_tokeniser(model_name: str):
                     token=access_token,
                     device_map="auto",
             )
+            size='70b'
         else:
             if '7b' in model_name.lower():
                 model_dtype = torch.float32
+                size='7b'
             else: #half precision for bigger llama models
                 model_dtype = torch.float16
+                size='13b'
             tokenizer = LlamaTokenizer.from_pretrained(model_name, token=access_token, device_map="auto")
             model = LlamaForCausalLM.from_pretrained(model_name, torch_dtype=model_dtype, token=access_token, device_map="auto")
 
         MODEL_CONFIG={"n_heads":model.config.num_attention_heads,
                       "n_layers":model.config.num_hidden_layers,
                       "resid_dim":model.config.hidden_size,
-                      "name_or_path":model.config._name_or_path,
+                      "name_or_path":f'llama-{size}',
                       "attn_hook_names":[f'model.layers.{layer}.self_attn.o_proj' for layer in range(model.config.num_hidden_layers)],
                       "layer_hook_names":[f'model.layers.{layer}' for layer in range(model.config.num_hidden_layers)]}
     
