@@ -17,6 +17,7 @@ def average_cosine_sim(
     N_TRIALS: int, 
     split_attention: bool=False,
     final_activations_only: bool=False,
+    DEBUG: bool=False,
     ):
 
     """
@@ -35,6 +36,7 @@ def average_cosine_sim(
         N_TRIALS, 
         split_attention,
         final_activations_only,
+        DEBUG,   
     )
     num_layers = model_config['n_layers']
 
@@ -70,5 +72,5 @@ def average_cosine_sim(
     plt.ylabel('Average Cosine Similarity', fontsize=16)
     plt.title(f'{model_name}', fontsize=16)
     plt.legend(fontsize=16)  # Display the legend
-    plt.savefig(f'{model_name}-cosine-sim-{time}.pdf', format='pdf')
+    plt.savefig(f'results/cosine-sims/{model_name}-{time}.pdf', format='pdf')
     plt.show()

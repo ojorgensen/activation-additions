@@ -1,4 +1,4 @@
-import os, re, json
+import os, re, json, gc
 
 from typing import List, Dict
 
@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from baukit import TraceDict
 from tqdm import tqdm
+
+from src.utils.memory_utils import print_cpu_memory, print_gpu_memory
 
 # Activations
 def gather_activations(prompt, layers, model, tokenizer):
@@ -42,6 +44,7 @@ def gather_activations_from_dataset(
         N_TRIALS: int, 
         split_attention: bool=False,
         final_activations_only: bool=False,
+        DEBUG: bool=False,
         ):
     """
     Collects all desired activations for arbitrary prompts, for a given type of activation.
@@ -83,13 +86,14 @@ def gather_activations_from_dataset(
         activation_storage[activation_type] = {}
 
     for n in tqdm(range(N_TRIALS), desc="Gathering activations"):
+        torch.cuda.empty_cache()
         prompt = dataset[n]
         activations_td = gather_activations(prompt, all_activation_layers, model, tokenizer)
         if split_attention:
             raise NotImplementedError
         
         for activation_type in activation_types:
-            stack = torch.stack([activations_td[layer].output[0] for layer in model_config[activation_type]])
+            stack = torch.stack([activations_td[layer].output[0] for layer in model_config[activation_type]]).cpu()
             # Shape should be (n_layers, n_tokens, hidden_size)
             # Removes batch dimension if it exists
             if len(stack.shape) == 4:
@@ -102,7 +106,12 @@ def gather_activations_from_dataset(
                 raise NotImplementedError
                 # Different activation shapes could be an issue here!
         
-            activation_storage[activation_type][n] = stack
+            activation_storage[activation_type][n] = stack.detach().cpu()
+            if DEBUG:
+                print_cpu_memory()
+                print_gpu_memory()
+
+        activations_td.close()
     
     return activation_storage
 

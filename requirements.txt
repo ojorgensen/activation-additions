@@ -17,3 +17,7 @@ protobuf
 bitsandbytes
 # baukit
 git+https://github.com/davidbau/baukit@main#egg=baukit
+
+# For checking memory issues
+psutil
+GPUtil
