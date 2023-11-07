@@ -93,7 +93,7 @@ def gather_activations_from_dataset(
             raise NotImplementedError
         
         for activation_type in activation_types:
-            stack = torch.stack([activations_td[layer].output[0] for layer in model_config[activation_type]]).cpu()
+            stack = torch.stack([activations_td[layer].output[0].to(torch.device('cpu')) for layer in model_config[activation_type]]).cpu()
             # Shape should be (n_layers, n_tokens, hidden_size)
             # Removes batch dimension if it exists
             if len(stack.shape) == 4:

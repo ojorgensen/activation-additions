@@ -49,6 +49,8 @@ def average_cosine_sim(
         X = t.concatenate([activation_storage[activation_type][i][layer] for i in range(N_TRIALS)])
         # Norm all activations
         normed_X = X / X.norm(dim=1)[:, None]
+        # Ensure float32
+        normed_X = normed_X.float()
         # Compute pairwise activations
         sim = t.mm(normed_X, normed_X.t())
 
