@@ -115,26 +115,24 @@ def gather_activations_from_dataset(
 def average_vectors(activation_storage, model_config):
     """
     Computes the average vector of activations across all layers for a given activation type.
-    Assuming layer hook names TODO: change this
-    TODO: fix a memory leak currently here!
-    Arguments:
-        activation_storage: dictionary of activations
-        model: huggingface model
-        tokenizer: huggingface tokenizer
-        model_config: dictionary of model configuration
-    Returns:
-        average_vector: tensor of shape (n_tokens, hidden_size)
+    Assuming layer hook names TODO: fix this
     """
-    # Make a tensor of the average activation in each layer
     average_tensor = torch.zeros(model_config['n_layers'], model_config['resid_dim'])
-    total_tokens = 0
+
+    # Concatenate all tensors across points for each layer
+    concatenated_activations = [
+        torch.cat([activation_storage['layer_hook_names'][point][layer] for point in range(len(activation_storage['layer_hook_names']))], dim=0)
+        for layer in range(model_config['n_layers'])
+    ]
+    print(concatenated_activations[0].shape)
+
+    # Compute the total number of tokens
+    total_tokens = sum(activations.shape[0] for activations in concatenated_activations)
+
+    # Sum and average across the concatenated tensors for each layer
     for layer in range(model_config['n_layers']):
-        for point in range(len(activation_storage['layer_hook_names'])):
-            n_tokens = len(activation_storage['layer_hook_names'][point][layer].shape[1])
-            total_tokens += n_tokens
-            for token in range(n_tokens):
-                average_tensor[layer] += activation_storage['layer_hook_names'][point][layer][:,token,:]
-        average_tensor[layer] /= total_tokens
+        average_tensor[layer] = concatenated_activations[layer].sum(dim=0) / total_tokens
+        torch.cuda.empty_cache()
     
     return average_tensor
 

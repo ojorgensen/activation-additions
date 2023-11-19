@@ -190,4 +190,3 @@ def steering_natural_text(
         outputs["steered"].append(tokenizer.decode(intervention_output.squeeze()[-max_new_tokens:]))
 
     return outputs
-
