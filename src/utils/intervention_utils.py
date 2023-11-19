@@ -152,7 +152,8 @@ def steering_natural_text(
     temperature=1.0, 
     freq_penalty=1.0,
     top_p=0.3,
-    n_completions=5
+    n_completions=5,
+    n_beams=5
     ):
     """
     Allows for intervening on natural text.
@@ -163,13 +164,29 @@ def steering_natural_text(
     outputs = {"clean": [], "steered": []}
     for _ in tqdm(range(n_completions)):
         # Clean Runs
-        clean_output = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=True, pad_token_id=tokenizer.eos_token_id)
+        clean_output = model.generate(**inputs, 
+                                      max_new_tokens=max_new_tokens, 
+                                      do_sample=True, 
+                                      pad_token_id=tokenizer.eos_token_id,
+                                      top_p=top_p, 
+                                      temperature=temperature, 
+                                      repetition_penalty=freq_penalty,
+                                      num_beams=n_beams,
+                                      )
         outputs["clean"].append(tokenizer.decode(clean_output.squeeze()[-max_new_tokens:]))
 
         # Perform Intervention
         intervention_fn = add_function_vector(edit_layer, steering_vector, model.device)
         with TraceDict(model, layers=model_config['layer_hook_names'], edit_output=intervention_fn):     
-            intervention_output = model.generate(**inputs, max_new_tokens = max_new_tokens, do_sample=True, pad_token_id=tokenizer.eos_token_id, top_p=top_p, temperature=temperature, repetition_penalty=freq_penalty)
+            intervention_output = model.generate(**inputs, 
+                                                 max_new_tokens = max_new_tokens, 
+                                                 do_sample=True, 
+                                                 pad_token_id=tokenizer.eos_token_id, 
+                                                 top_p=top_p, 
+                                                 temperature=temperature, 
+                                                 repetition_penalty=freq_penalty,
+                                                 num_beams=n_beams,
+                                                 )
         outputs["steered"].append(tokenizer.decode(intervention_output.squeeze()[-max_new_tokens:]))
 
     return outputs

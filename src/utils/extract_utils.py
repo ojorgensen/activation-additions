@@ -102,9 +102,6 @@ def gather_activations_from_dataset(
             if final_activations_only:
                 stack = stack[:,-1,:]
                 stack = einops.rearrange(stack, 'n_layers hidden_size -> n_layers 1 hidden_size')
-            else:
-                raise NotImplementedError
-                # Different activation shapes could be an issue here!
         
             activation_storage[activation_type][n] = stack.detach().cpu()
             if DEBUG:
@@ -115,9 +112,11 @@ def gather_activations_from_dataset(
     
     return activation_storage
 
-def average_vector(activation_storage, model_config):
+def average_vectors(activation_storage, model_config):
     """
     Computes the average vector of activations across all layers for a given activation type.
+    Assuming layer hook names TODO: change this
+    TODO: fix a memory leak currently here!
     Arguments:
         activation_storage: dictionary of activations
         model: huggingface model
@@ -128,8 +127,14 @@ def average_vector(activation_storage, model_config):
     """
     # Make a tensor of the average activation in each layer
     average_tensor = torch.zeros(model_config['n_layers'], model_config['resid_dim'])
+    total_tokens = 0
     for layer in range(model_config['n_layers']):
         for point in range(len(activation_storage['layer_hook_names'])):
-            average_tensor[layer] += activation_storage['layer_hook_names'][point][layer].squeeze()
-        average_tensor[layer] /= model_config['n_layers']
+            n_tokens = len(activation_storage['layer_hook_names'][point][layer].shape[1])
+            total_tokens += n_tokens
+            for token in range(n_tokens):
+                average_tensor[layer] += activation_storage['layer_hook_names'][point][layer][:,token,:]
+        average_tensor[layer] /= total_tokens
+    
+    return average_tensor
 
