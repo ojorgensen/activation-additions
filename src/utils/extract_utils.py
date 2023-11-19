@@ -136,3 +136,29 @@ def average_vectors(activation_storage, model_config):
     
     return average_tensor
 
+def steering_vector(
+        model,
+        tokenizer,
+        model_config,
+        dataset1: List[str],
+        dataset2: List[str],
+        activation_types: List[str], 
+        split_attention: bool=False,
+        final_activations_only: bool=False,
+        DEBUG: bool=False,
+):
+    """
+    Computes the steering vector between two datasets.
+    """
+    # Gather activations for each dataset
+    activation_storage1 = gather_activations_from_dataset(dataset1, activation_types, model, tokenizer, model_config, len(dataset1), split_attention, final_activations_only, DEBUG)
+    activation_storage2 = gather_activations_from_dataset(dataset2, activation_types, model, tokenizer, model_config, len(dataset2), split_attention, final_activations_only, DEBUG)
+
+    # Compute average vectors for each dataset
+    average_tensor1 = average_vectors(activation_storage1, model_config)
+    average_tensor2 = average_vectors(activation_storage2, model_config)
+
+    # Compute steering vector
+    steering_vector = average_tensor2 - average_tensor1
+
+    return steering_vector
