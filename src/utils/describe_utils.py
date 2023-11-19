@@ -76,3 +76,4 @@ def average_cosine_sim(
     plt.legend(fontsize=16)  # Display the legend
     plt.savefig(f'results/cosine-sims/{model_name}-{time}.pdf', format='pdf')
     plt.show()
+

@@ -115,5 +115,21 @@ def gather_activations_from_dataset(
     
     return activation_storage
 
-        
+def average_vector(activation_storage, model_config):
+    """
+    Computes the average vector of activations across all layers for a given activation type.
+    Arguments:
+        activation_storage: dictionary of activations
+        model: huggingface model
+        tokenizer: huggingface tokenizer
+        model_config: dictionary of model configuration
+    Returns:
+        average_vector: tensor of shape (n_tokens, hidden_size)
+    """
+    # Make a tensor of the average activation in each layer
+    average_tensor = torch.zeros(model_config['n_layers'], model_config['resid_dim'])
+    for layer in range(model_config['n_layers']):
+        for point in range(len(activation_storage['layer_hook_names'])):
+            average_tensor[layer] += activation_storage['layer_hook_names'][point][layer].squeeze()
+        average_tensor[layer] /= model_config['n_layers']
 
