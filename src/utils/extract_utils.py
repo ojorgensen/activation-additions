@@ -122,7 +122,7 @@ def average_vectors(activation_storage, model_config):
     n_datapoints = len(activation_storage['layer_hook_names'])
 
     # Compute the total number of tokens
-    total_tokens = sum([activation_storage['layer_hook_names'][point].shape[0] for point in range(n_datapoints)])
+    total_tokens = sum([activation_storage['layer_hook_names'][point][0].shape[0] for point in range(n_datapoints)])
 
     # Sum and average across the concatenated tensors for each layer
     for layer in range(model_config['n_layers']):
@@ -154,6 +154,6 @@ def create_steering_vector(
     average_tensor2 = average_vectors(activation_storage2, model_config)
 
     # Compute steering vector
-    steering_vector = average_tensor2 - average_tensor1
+    steering_vector = average_tensor1 - average_tensor2
 
     return steering_vector
