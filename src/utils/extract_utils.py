@@ -119,24 +119,19 @@ def average_vectors(activation_storage, model_config):
     """
     average_tensor = torch.zeros(model_config['n_layers'], model_config['resid_dim'])
 
-    # Concatenate all tensors across points for each layer
-    concatenated_activations = [
-        torch.cat([activation_storage['layer_hook_names'][point][layer] for point in range(len(activation_storage['layer_hook_names']))], dim=0)
-        for layer in range(model_config['n_layers'])
-    ]
-    print(concatenated_activations[0].shape)
+    n_datapoints = len(activation_storage['layer_hook_names'])
 
     # Compute the total number of tokens
-    total_tokens = sum(activations.shape[0] for activations in concatenated_activations)
+    total_tokens = sum([activation_storage['layer_hook_names'][point].shape[0] for point in range(n_datapoints)])
 
     # Sum and average across the concatenated tensors for each layer
     for layer in range(model_config['n_layers']):
-        average_tensor[layer] = concatenated_activations[layer].sum(dim=0) / total_tokens
-        torch.cuda.empty_cache()
+        activations = [activation_storage['layer_hook_names'][point][layer] for point in range(len(activation_storage['layer_hook_names']))]
+        average_tensor[layer] = torch.sum(torch.concatenate(activations), dim=0) / total_tokens
     
     return average_tensor
 
-def steering_vector(
+def create_steering_vector(
         model,
         tokenizer,
         model_config,
