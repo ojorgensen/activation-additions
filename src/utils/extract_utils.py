@@ -10,8 +10,92 @@ from baukit import TraceDict
 from tqdm import tqdm
 
 from src.utils.memory_utils import print_cpu_memory, print_gpu_memory
+from src.utils.prompt_utils import get_token_meta_labels, word_pairs_to_prompt_data
 
-# Activations
+# Layer Activations
+def gather_layer_activations(prompt_data, layers, model, tokenizer):
+    """
+    Collects activations for an ICL prompt 
+
+    Parameters:
+    prompt_data: dict containing
+    layers: layer names to get activatons from
+    model: huggingface model
+    tokenizer: huggingface tokenizer
+
+    Returns:
+    td: tracedict with stored activations
+    """   
+    
+    # Get sentence and token labels
+    query = prompt_data['query_target']['input']
+    _, prompt_string = get_token_meta_labels(prompt_data, tokenizer, query)
+    sentence = [prompt_string]
+
+    inputs = tokenizer(sentence, return_tensors='pt').to(model.device)
+
+    # Access Activations 
+    with TraceDict(model, layers=layers, retain_input=False, retain_output=True) as td:                
+        model(**inputs) # batch_size x n_tokens x vocab_size, only want last token prediction
+
+    return td
+
+
+def get_mean_layer_activations(dataset, model, model_config, tokenizer, n_icl_examples = 10, N_TRIALS = 100, shuffle_labels=False, prefixes=None, separators=None, filter_set=None):
+    """
+    Computes the average activations for each layer in the model, at the final predictive token.
+
+    Parameters: 
+    dataset: ICL dataset
+    model: huggingface model
+    model_config: contains model config information (n layers, n heads, etc.)
+    tokenizer: huggingface tokenizer
+    n_icl_examples: Number of shots in each in-context prompt
+    N_TRIALS: Number of in-context prompts to average over
+    shuffle_labels: Whether to shuffle the ICL labels or not
+    prefixes: ICL template prefixes
+    separators: ICL template separators
+    filter_set: whether to only include samples the model gets correct via ICL
+
+    Returns:
+    mean_activations: avg activation of each layer hidden state of the model taken across n_trials ICL prompts
+    """
+    n_test_examples = 1
+    activation_storage = torch.zeros(N_TRIALS, model_config['n_layers'], model_config['resid_dim'])
+
+    if filter_set is None:
+        filter_set = np.arange(len(dataset['valid']))
+
+    is_llama = 'llama' in model_config['name_or_path']
+    prepend_bos = not is_llama
+
+    for n in range(N_TRIALS):
+        word_pairs = dataset['train'][np.random.choice(len(dataset['train']),n_icl_examples, replace=False)]
+        word_pairs_test = dataset['valid'][np.random.choice(filter_set,n_test_examples, replace=False)]
+        if prefixes is not None and separators is not None:
+            prompt_data = word_pairs_to_prompt_data(word_pairs, query_target_pair=word_pairs_test, prepend_bos_token=prepend_bos, 
+                                                    shuffle_labels=shuffle_labels, prefixes=prefixes, separators=separators)
+        else:
+            prompt_data = word_pairs_to_prompt_data(word_pairs, query_target_pair=word_pairs_test, prepend_bos_token=prepend_bos, shuffle_labels=shuffle_labels)
+        activations_td = gather_layer_activations(prompt_data=prompt_data, 
+                                                  layers = model_config['layer_hook_names'], 
+                                                  model=model, 
+                                                  tokenizer=tokenizer)
+        
+        stack_initial = torch.vstack([activations_td[layer].output[0] for layer in model_config['layer_hook_names']])
+        stack_filtered = stack_initial[:,-1,:] #Last token 
+        
+        activation_storage[n] = stack_filtered
+
+    mean_activations = activation_storage.mean(dim=0)
+    return mean_activations
+
+
+
+
+
+
+# Ole's code below
 def gather_activations(prompt, layers, model, tokenizer):
     """
     Collects activations for arbitrary prompts
@@ -34,6 +118,10 @@ def gather_activations(prompt, layers, model, tokenizer):
         model(**inputs) # batch_size x n_tokens x activation_dim, only want last token prediction
 
     return td
+
+
+
+
 
 def gather_activations_from_dataset(
         dataset: List[str], 

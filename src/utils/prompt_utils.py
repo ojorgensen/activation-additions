@@ -497,6 +497,9 @@ def load_dataset(task_name: str,
     d_group_map = [(dataset_type, os.path.exists(os.path.join(root_data_dir, dataset_type, task_name+'.json'))) for dataset_type in data_folders]
 
     d_group = list(filter(lambda x: x[1], d_group_map))
+    print(os.path.join(root_data_dir, data_folders[0], task_name+'.json'))
+    print("d_group is: ", d_group)
+    print("Path is:", path)
 
     assert len(d_group) !=0 and len(d_group) == 1, f"Error! 'task_name'={task_name}.json must be uniquely contained in one of these directories:{data_folders}. Please check the root_data_dir"
     dataset_folder = d_group[0][0]

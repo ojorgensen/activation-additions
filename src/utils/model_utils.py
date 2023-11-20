@@ -1,6 +1,8 @@
 import torch
 import accelerate
 import os
+import numpy as np
+import random
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer, LlamaForCausalLM
 
@@ -96,3 +98,27 @@ def load_gpt_model_and_tokeniser(model_name: str):
 
     return model, tokenizer, MODEL_CONFIG
     
+def set_seed(seed: int) -> None:
+    """
+    Sets the seed to make everything deterministic, for reproducibility of experiments
+
+    Parameters:
+    seed: the number to set the seed to
+
+    Return: None
+    """
+
+    # Random seed
+    random.seed(seed)
+
+    # Numpy seed
+    np.random.seed(seed)
+
+    # Torch seed
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
+
+    # os seed
+    os.environ['PYTHONHASHSEED'] = str(seed)
