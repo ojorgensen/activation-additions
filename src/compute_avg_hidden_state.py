@@ -51,6 +51,10 @@ if __name__ == "__main__":
 
     # Create approximation of centre of model activations
     training_dataset = read_all_text_files("datasets/opentext_subset")
+    if 'llama' in model_config['name_or_path']:
+        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200])[4:] for text in training_dataset][:300]
+    else:
+        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200]) for text in training_dataset][:300]
 
     training_activations = gather_activations_from_dataset(
         training_dataset, ["layer_hook_names"], model, tokenizer, model_config, 
@@ -58,13 +62,6 @@ if __name__ == "__main__":
     )
 
     centre_approximation = average_vectors(training_activations, model_config)
-
-
-
-    if 'llama' in model_config['name_or_path']:
-        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200])[4:] for text in training_dataset][:300]
-    else:
-        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200]) for text in training_dataset][:300]
     
     for seed in seeds:
         set_seed(seed)
@@ -97,11 +94,12 @@ if __name__ == "__main__":
         fs_results = n_shot_eval_no_intervention(dataset, n_shots, model, model_config, tokenizer)
         filter_set = np.where(np.array(fs_results['clean_rank_list']) == 0)[0]
 
-        zs_res = {}
-        fss_res = {}
         # Specify which layers to steer at
         if layers == []:
             layers = range(model_config['n_layers'])
+        
+        zs_res = {i:{} for i in layers}
+        fss_res = {i:{} for i in layers}
 
         for i in layers:
             print("Evaluating original method")
