@@ -2,6 +2,7 @@ import os, json
 import torch, numpy as np
 import argparse
 from typing import List
+from datetime import datetime
 
 # Include prompt creation helper functions
 from src.utils.prompt_utils import load_dataset
@@ -25,14 +26,17 @@ if __name__ == "__main__":
     parser.add_argument('--device', help='Device to run on', required=False, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--prefixes', help='Prompt template prefixes to be used', type=json.loads, required=False, default={"input":"Q:", "output":"A:", "instructions":""})
     parser.add_argument('--separators', help='Prompt template separators to be used', type=json.loads, required=False, default={"input":"\n", "output":"\n\n", "instructions":""})    
-    parser.add_argument('--layers', help='Layers to steer on', type=int, nargs='*', required=False, default=[])   
+    parser.add_argument('--layers', help='Layers to steer on', type=int, nargs='*', required=False, default=[])
+    parser.add_argument('--training_set_size', help='Number of examples to use for training', type=int, required=False, default=300)
+    parser.add_argument('--steering_coefficient', help='Coefficient to scale steering vector by', type=float, required=False, default=1.0)
 
     args = parser.parse_args()
     
     dataset_name = args.dataset_name
     model_name = args.model_name
     root_data_dir = args.root_data_dir
-    save_path_root = f"{args.save_path_root}/{dataset_name}"
+    time = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+    save_path_root = f"{args.save_path_root}/{dataset_name}/{time}"
     n_seeds = args.n_seeds
     n_shots = args.n_shots
     n_trials = args.n_trials
@@ -41,6 +45,8 @@ if __name__ == "__main__":
     prefixes = args.prefixes
     separators = args.separators
     layers = args.layers
+    training_set_size = args.training_set_size
+    steering_coefficient = args.steering_coefficient
     
 
     # Load Model & Tokenizer
@@ -52,9 +58,9 @@ if __name__ == "__main__":
     # Create approximation of centre of model activations
     training_dataset = read_all_text_files("datasets/opentext_subset")
     if 'llama' in model_config['name_or_path']:
-        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200])[4:] for text in training_dataset][:300]
+        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200])[4:] for text in training_dataset][:training_set_size]
     else:
-        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200]) for text in training_dataset][:300]
+        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200]) for text in training_dataset][:training_set_size]
 
     training_activations = gather_activations_from_dataset(
         training_dataset, ["layer_hook_names"], model, tokenizer, model_config, 
@@ -103,12 +109,12 @@ if __name__ == "__main__":
 
         for i in layers:
             print("Evaluating original method")
-            zs_res[i]['original'] = n_shot_eval(dataset, mean_activations[i].unsqueeze(0), i, 0, model, model_config, tokenizer, filter_set=filter_set)
-            fss_res[i]['original'] = n_shot_eval(dataset, mean_activations[i].unsqueeze(0), i, 10, model, model_config, tokenizer, filter_set=filter_set, shuffle_labels=True)
+            zs_res[i]['original'] = n_shot_eval(dataset, steering_coefficient * mean_activations[i].unsqueeze(0), i, 0, model, model_config, tokenizer, filter_set=filter_set)
+            fss_res[i]['original'] = n_shot_eval(dataset, steering_coefficient * mean_activations[i].unsqueeze(0), i, 10, model, model_config, tokenizer, filter_set=filter_set, shuffle_labels=True)
             # Repeat with centred vector!
             print("Evaluating centred method")
-            zs_res[i]['centred'] = n_shot_eval(dataset, mc_steering_vector[i].unsqueeze(0), i, 0, model, model_config, tokenizer, filter_set=filter_set)
-            fss_res[i]['centred'] = n_shot_eval(dataset, mc_steering_vector[i].unsqueeze(0), i, 10, model, model_config, tokenizer, filter_set=filter_set, shuffle_labels=True)
+            zs_res[i]['centred'] = n_shot_eval(dataset, steering_coefficient * mc_steering_vector[i].unsqueeze(0), i, 0, model, model_config, tokenizer, filter_set=filter_set)
+            fss_res[i]['centred'] = n_shot_eval(dataset, steering_coefficient * mc_steering_vector[i].unsqueeze(0), i, 10, model, model_config, tokenizer, filter_set=filter_set, shuffle_labels=True)
 
         with open(f'{save_path_root}/mean_layer_intervention_zs_results_sweep_{seed}.json', 'w') as interv_zsres_file:
             json.dump(zs_res, interv_zsres_file, indent=2)
