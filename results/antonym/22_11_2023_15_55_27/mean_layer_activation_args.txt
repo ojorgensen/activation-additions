@@ -1,0 +1,26 @@
+{
+  "dataset_name": "antonym",
+  "model_name": "meta-llama/Llama-2-7b-hf",
+  "root_data_dir": "dataset_files",
+  "save_path_root": "results/antonym/22_11_2023_15_55_27",
+  "n_seeds": 5,
+  "n_shots": 10,
+  "n_trials": 100,
+  "test_split": 0.3,
+  "device": "cuda",
+  "prefixes": {
+    "input": "Q:",
+    "output": "A:",
+    "instructions": ""
+  },
+  "separators": {
+    "input": "\n",
+    "output": "\n\n",
+    "instructions": ""
+  },
+  "layers": [
+    14
+  ],
+  "training_set_size": 300,
+  "steering_coefficient": 1.0
+}
