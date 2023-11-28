@@ -82,7 +82,7 @@ def get_mean_layer_activations(dataset, model, model_config, tokenizer, n_icl_ex
                                                   model=model, 
                                                   tokenizer=tokenizer)
         
-        stack_initial = torch.vstack([activations_td[layer].output[0] for layer in model_config['layer_hook_names']])
+        stack_initial = torch.vstack([activations_td[layer].output[0].to('cpu') for layer in model_config['layer_hook_names']])
         stack_filtered = stack_initial[:,-1,:] #Last token 
         
         activation_storage[n] = stack_filtered

@@ -110,13 +110,9 @@ if __name__ == "__main__":
         for i in layers:
             print("Evaluating original method")
             zs_res[i]['original'] = n_shot_eval(dataset, steering_coefficient * mean_activations[i].unsqueeze(0), i, 0, model, model_config, tokenizer, filter_set=filter_set)
-            fss_res[i]['original'] = n_shot_eval(dataset, steering_coefficient * mean_activations[i].unsqueeze(0), i, 10, model, model_config, tokenizer, filter_set=filter_set, shuffle_labels=True)
             # Repeat with centred vector!
             print("Evaluating centred method")
             zs_res[i]['centred'] = n_shot_eval(dataset, steering_coefficient * mc_steering_vector[i].unsqueeze(0), i, 0, model, model_config, tokenizer, filter_set=filter_set)
-            fss_res[i]['centred'] = n_shot_eval(dataset, steering_coefficient * mc_steering_vector[i].unsqueeze(0), i, 10, model, model_config, tokenizer, filter_set=filter_set, shuffle_labels=True)
 
         with open(f'{save_path_root}/mean_layer_intervention_zs_results_sweep_{seed}.json', 'w') as interv_zsres_file:
             json.dump(zs_res, interv_zsres_file, indent=2)
-        with open(f'{save_path_root}/mean_layer_intervention_fss_results_sweep_{seed}.json', 'w') as interv_fssres_file:
-            json.dump(fss_res, interv_fssres_file, indent=2)

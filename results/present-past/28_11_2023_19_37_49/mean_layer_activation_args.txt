@@ -1,0 +1,26 @@
+{
+  "dataset_name": "present-past",
+  "model_name": "meta-llama/Llama-2-7b-hf",
+  "root_data_dir": "dataset_files",
+  "save_path_root": "results/present-past/28_11_2023_19_37_49",
+  "n_seeds": 5,
+  "n_shots": 10,
+  "n_trials": 100,
+  "test_split": 0.3,
+  "device": "cuda",
+  "prefixes": {
+    "input": "Q:",
+    "output": "A:",
+    "instructions": ""
+  },
+  "separators": {
+    "input": "\n",
+    "output": "\n\n",
+    "instructions": ""
+  },
+  "layers": [
+    8
+  ],
+  "training_set_size": 300,
+  "steering_coefficient": 1.0
+}
