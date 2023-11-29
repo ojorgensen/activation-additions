@@ -1,0 +1,28 @@
+{
+  "dataset_name": "antonym",
+  "model_name": "EleutherAI/gpt-j-6b",
+  "root_data_dir": "dataset_files",
+  "save_path_root": "results/antonym/29_11_2023_16_36_02",
+  "n_seeds": 5,
+  "n_shots": 10,
+  "n_trials": 100,
+  "test_split": 0.3,
+  "device": "cuda",
+  "prefixes": {
+    "input": "Q:",
+    "output": "A:",
+    "instructions": ""
+  },
+  "separators": {
+    "input": "\n",
+    "output": "\n\n",
+    "instructions": ""
+  },
+  "layers": [
+    14,
+    15,
+    16
+  ],
+  "training_set_size": 300,
+  "steering_coefficient": 1.0
+}
