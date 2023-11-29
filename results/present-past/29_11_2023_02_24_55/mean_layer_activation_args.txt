@@ -1,0 +1,29 @@
+{
+  "dataset_name": "present-past",
+  "model_name": "EleutherAI/gpt-j-6b",
+  "root_data_dir": "dataset_files",
+  "save_path_root": "results/present-past/29_11_2023_02_24_55",
+  "n_seeds": 5,
+  "n_shots": 10,
+  "n_trials": 100,
+  "test_split": 0.3,
+  "device": "cuda",
+  "prefixes": {
+    "input": "Q:",
+    "output": "A:",
+    "instructions": ""
+  },
+  "separators": {
+    "input": "\n",
+    "output": "\n\n",
+    "instructions": ""
+  },
+  "layers": [
+    8,
+    10,
+    11,
+    13
+  ],
+  "training_set_size": 300,
+  "steering_coefficient": 1.0
+}
