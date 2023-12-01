@@ -10,6 +10,7 @@ matplotlib
 pandas
 einops
 scikit-learn
+seaborn
 # Sentencepiece for llama models
 sentencepiece
 # For llama models
