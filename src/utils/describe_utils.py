@@ -4,7 +4,7 @@ from datetime import datetime
 import torch as t
 import numpy as np
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 
 from src.utils.extract_utils import gather_activations_from_dataset
 
@@ -24,6 +24,11 @@ def average_cosine_sim(
     Compute the average cosine similarity between activations of a layer of a model,
     using the dataset to produce activations.
     """
+    label_dict = {
+       "attn_hook_names": "attention layer",
+        "layer_hook_names": "residual stream",
+        "mlp_hook_names": "mlp layer",
+    }
 
     # Produce all activations
 
@@ -63,16 +68,26 @@ def average_cosine_sim(
 
     # Plotting the histogram
     for activation_type in activation_types:
-        plt.plot(results[activation_type].values(), label=activation_type)
+        plt.plot(results[activation_type].values(), label=label_dict.get(activation_type, activation_type))
 
     print(results)
-
+    sns.set()
+    params = {'legend.fontsize': 'xx-large',
+              'figure.figsize': (8, 5),
+            'axes.labelsize': 'xx-large',
+            'axes.titlesize':'xx-large',
+            'xtick.labelsize':'xx-large',
+            'ytick.labelsize':'xx-large'}
+    plt.rcParams.update(params)
+    sns.set_style("whitegrid")
+    sns.set_context("paper")
     # Adding labels and title
     model_name = model_config['name_or_path']
     time = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
     plt.xlabel('Layer Index', fontsize=16)
     plt.ylabel('Average Cosine Similarity', fontsize=16)
     plt.title(f'{model_name}', fontsize=16)
+    # In the legend, name each line manually
     plt.legend(fontsize=16)  # Display the legend
     plt.savefig(f'results/cosine-sims/{model_name}-{time}.pdf', format='pdf')
     plt.show()

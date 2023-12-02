@@ -27,7 +27,8 @@ def load_gpt_model_and_tokeniser(model_name: str):
                       "resid_dim":model.config.n_embd,
                       "name_or_path":'gpt2-xl',
                       "attn_hook_names":[f'transformer.h.{layer}.attn.c_proj' for layer in range(model.config.n_layer)],
-                      "layer_hook_names":[f'transformer.h.{layer}' for layer in range(model.config.n_layer)]}
+                      "layer_hook_names":[f'transformer.h.{layer}' for layer in range(model.config.n_layer)],
+                      "mlp_hook_names":[]}
         
     elif 'gpt-j' in model_name.lower():
         tokenizer = AutoTokenizer.from_pretrained(model_name, device_map="auto")
@@ -39,7 +40,9 @@ def load_gpt_model_and_tokeniser(model_name: str):
                       "resid_dim":model.config.n_embd,
                       "name_or_path":'gpt-j',
                       "attn_hook_names":[f'transformer.h.{layer}.attn.out_proj' for layer in range(model.config.n_layer)],
-                      "layer_hook_names":[f'transformer.h.{layer}' for layer in range(model.config.n_layer)]}
+                      "layer_hook_names":[f'transformer.h.{layer}' for layer in range(model.config.n_layer)],
+                    #   check mlp hook names are correct!
+                      "mlp_hook_names":[f'transformer.h.{layer}.mlp.fc_out' for layer in range(model.config.n_layer)]}
     
     elif 'gpt-neox' in model_name.lower():
         tokenizer = AutoTokenizer.from_pretrained(model_name, device_map="auto")
@@ -51,7 +54,8 @@ def load_gpt_model_and_tokeniser(model_name: str):
                       "resid_dim": model.config.hidden_size,
                       "name_or_path":'gpt-neox',
                       "attn_hook_names":[f'gpt_neox.layers.{layer}.attention.dense' for layer in range(model.config.num_hidden_layers)],
-                      "layer_hook_names":[f'gpt_neox.layers.{layer}' for layer in range(model.config.num_hidden_layers)]}
+                      "layer_hook_names":[f'gpt_neox.layers.{layer}' for layer in range(model.config.num_hidden_layers)],
+                      "mlp_hook_names":[f'gpt_neox.layers.{layer}.mlp.dense_4h_to_h' for layer in range(model.config.num_hidden_layers)]}
         
     elif 'llama' in model_name.lower():
         if '70b' in model_name.lower():
@@ -87,7 +91,8 @@ def load_gpt_model_and_tokeniser(model_name: str):
                       "resid_dim":model.config.hidden_size,
                       "name_or_path":f'llama-{size}',
                       "attn_hook_names":[f'model.layers.{layer}.self_attn.o_proj' for layer in range(model.config.num_hidden_layers)],
-                      "layer_hook_names":[f'model.layers.{layer}' for layer in range(model.config.num_hidden_layers)]}
+                      "layer_hook_names":[f'model.layers.{layer}' for layer in range(model.config.num_hidden_layers)],
+                      "mlp_hook_names":[f'model.layers.{layer}.mlp.down_proj' for layer in range(model.config.num_hidden_layers)]}
     
     else:
         raise NotImplementedError
