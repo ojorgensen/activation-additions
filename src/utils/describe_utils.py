@@ -26,8 +26,8 @@ def average_cosine_sim(
     """
     label_dict = {
        "attn_hook_names": "attention layer",
-        "layer_hook_names": "residual stream",
         "mlp_hook_names": "mlp layer",
+        "layer_hook_names": "residual stream",
     }
 
     # Produce all activations
