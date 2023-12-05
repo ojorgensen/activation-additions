@@ -1,16 +1,6 @@
 #!/bin/bash
 
-python -m src.compute_avg_hidden_state --dataset_name=antonym --layers 17 18
-
-python -m src.compute_avg_hidden_state --dataset_name=capitalize --layers 17 18
-
-python -m src.compute_avg_hidden_state --dataset_name=country-capital --layers 17 18
-
-python -m src.compute_avg_hidden_state --dataset_name=english-french --layers 17 18
-
-python -m src.compute_avg_hidden_state --dataset_name=present-past --layers 17 18
-
-python -m src.compute_avg_hidden_state --dataset_name=singular-plural --layers 17 18
+python -m src.compute_avg_hidden_state --dataset_name=antonym --layers 13 --model_name=EleutherAI/gpt-neox-20b --training_set_length 100
 
 
 

@@ -28,6 +28,7 @@ if __name__ == "__main__":
     parser.add_argument('--separators', help='Prompt template separators to be used', type=json.loads, required=False, default={"input":"\n", "output":"\n\n", "instructions":""})    
     parser.add_argument('--layers', help='Layers to steer on', type=int, nargs='*', required=False, default=[])
     parser.add_argument('--training_set_size', help='Number of examples to use for training', type=int, required=False, default=300)
+    parser.add_argument('--training_set_length', help='Number of tokens to use for training examples', type=int, required=False, default=200)
     parser.add_argument('--steering_coefficient', help='Coefficient to scale steering vector by', type=float, required=False, default=1.0)
 
     args = parser.parse_args()
@@ -46,6 +47,7 @@ if __name__ == "__main__":
     separators = args.separators
     layers = args.layers
     training_set_size = args.training_set_size
+    training_set_length = args.training_set_length
     steering_coefficient = args.steering_coefficient
     
 
@@ -58,9 +60,9 @@ if __name__ == "__main__":
     # Create approximation of centre of model activations
     training_dataset = read_all_text_files("datasets/opentext_subset")
     if 'llama' in model_config['name_or_path']:
-        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200])[4:] for text in training_dataset][:training_set_size]
+        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:training_set_length])[4:] for text in training_dataset][:training_set_size]
     else:
-        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:200]) for text in training_dataset][:training_set_size]
+        training_dataset = [tokenizer.decode(tokenizer.encode(text)[:training_set_length]) for text in training_dataset][:training_set_size]
 
     training_activations = gather_activations_from_dataset(
         training_dataset, ["layer_hook_names"], model, tokenizer, model_config, 
